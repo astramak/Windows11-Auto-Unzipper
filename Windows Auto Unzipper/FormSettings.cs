@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Windows.Forms;
 using Windows_Auto_Unzipper.Properties;
 
@@ -26,10 +25,19 @@ namespace Windows_Auto_Unzipper
         {
             this.labelTargetDirectory.Text = this.context.GetTargetFolder();
             this.toolTipTargetDirectory.SetToolTip(this.labelTargetDirectory, this.labelTargetDirectory.Text);
-            this.comboBoxStartMode.Text = Settings.Default.StartMode;
+            if (this.comboBoxStartMode.Items.Contains(Settings.Default.StartMode))
+            {
+                this.comboBoxStartMode.SelectedItem = Settings.Default.StartMode;
+            }
+            else
+            {
+                this.comboBoxStartMode.SelectedItem = "Running";
+            }
+
             this.checkBoxAutoLaunch.Checked = Settings.Default.AutoLaunch;
             this.checkBoxAutoDelete.Checked = Settings.Default.AutoDelete;
-            
+            this.textBoxArchiveExtensions.Text = ArchiveExtensionSettings.Format(Settings.Default.ArchiveExtensions);
+
         }
 
         /// <summary>
@@ -101,7 +109,7 @@ namespace Windows_Auto_Unzipper
             this.context.SetTargetDirectory(this.labelTargetDirectory.Text);
 
             //Save changes to start mode
-            String selected = this.comboBoxStartMode.Items[this.comboBoxStartMode.SelectedIndex].ToString();
+            String selected = this.comboBoxStartMode.SelectedItem?.ToString() ?? "Running";
             Settings.Default.StartMode = selected;
 
             //Save changes to auto launch option
@@ -109,7 +117,7 @@ namespace Windows_Auto_Unzipper
             //Update registry if autolaunch option changed
             if (autoLaunch != Settings.Default.AutoLaunch)
             {
-                
+
                 if (autoLaunch)
                 {
                     RegistryHelper.EnableAutoRun();
@@ -123,6 +131,9 @@ namespace Windows_Auto_Unzipper
 
             //Save changes to auto delete
             Settings.Default.AutoDelete = checkBoxAutoDelete.Checked;
+
+            //Save supported archive extensions
+            Settings.Default.ArchiveExtensions = ArchiveExtensionSettings.Format(this.textBoxArchiveExtensions.Text);
 
             Settings.Default.Save();
 

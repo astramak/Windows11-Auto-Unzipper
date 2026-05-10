@@ -6,10 +6,19 @@ Tired of having to manually extract every zip file you download? Target your dow
 
 ## Features
 - Change which folder the program watches for new zip files
-- Automatically delete the zip file after the extraction has completed
+- Configure which archive extensions are watched, such as `.zip`, `.7z`, or `.rar`
+- Automatically delete the archive after the extraction has completed
 - Launches automatically in the system tray when Windows starts
 - Enable or disable the program from the system tray right-click menu
 - Settings adjustable through the settings UI
+
+## Build
+This version targets Windows 11 with WinForms on .NET 8.
+
+```powershell
+dotnet restore
+dotnet build .\WindowsAutoUnzipper.sln
+```
 
 ## Screenshots
 ![Settings Window](https://imgur.com/0YoOIEk.png)

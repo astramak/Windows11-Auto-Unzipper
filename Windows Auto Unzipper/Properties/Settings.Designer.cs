@@ -14,7 +14,7 @@ namespace Windows_Auto_Unzipper.Properties {
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
         
         public static Settings Default {
@@ -22,7 +22,6 @@ namespace Windows_Auto_Unzipper.Properties {
                 return defaultInstance;
             }
         }
-        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -34,7 +33,7 @@ namespace Windows_Auto_Unzipper.Properties {
                 this["TargetFolder"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Running")]
@@ -46,7 +45,7 @@ namespace Windows_Auto_Unzipper.Properties {
                 this["StartMode"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Running")]
@@ -58,7 +57,6 @@ namespace Windows_Auto_Unzipper.Properties {
                 this["LastRunningMode"] = value;
             }
         }
-        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -80,6 +78,17 @@ namespace Windows_Auto_Unzipper.Properties {
             }
             set {
                 this["AutoDelete"] = value;
+            }
+        }
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(".zip")]
+        public string ArchiveExtensions {
+            get {
+                return ((string)(this["ArchiveExtensions"]));
+            }
+            set {
+                this["ArchiveExtensions"] = value;
             }
         }
     }

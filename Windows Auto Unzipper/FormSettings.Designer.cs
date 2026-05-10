@@ -1,7 +1,4 @@
-﻿
-using Windows_Auto_Unzipper.Properties;
-
-namespace Windows_Auto_Unzipper
+﻿namespace Windows_Auto_Unzipper
 {
     partial class FormSettings
     {
@@ -46,10 +43,12 @@ namespace Windows_Auto_Unzipper
             this.btnDone = new System.Windows.Forms.Button();
             this.labelAutoDelete = new System.Windows.Forms.Label();
             this.checkBoxAutoDelete = new System.Windows.Forms.CheckBox();
+            this.labelArchiveExtensions = new System.Windows.Forms.Label();
+            this.textBoxArchiveExtensions = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
-            // 
+            //
             // btnChangeDirectory
-            // 
+            //
             this.btnChangeDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnChangeDirectory.Location = new System.Drawing.Point(317, 27);
             this.btnChangeDirectory.Name = "btnChangeDirectory";
@@ -58,18 +57,18 @@ namespace Windows_Auto_Unzipper
             this.btnChangeDirectory.Text = "Change";
             this.btnChangeDirectory.UseVisualStyleBackColor = true;
             this.btnChangeDirectory.Click += new System.EventHandler(this.btnChangeDirectory_Click);
-            // 
+            //
             // labelTargetDirectory
-            // 
+            //
             this.labelTargetDirectory.AutoEllipsis = true;
             this.labelTargetDirectory.ForeColor = System.Drawing.SystemColors.GrayText;
             this.labelTargetDirectory.Location = new System.Drawing.Point(23, 31);
             this.labelTargetDirectory.Name = "labelTargetDirectory";
             this.labelTargetDirectory.Size = new System.Drawing.Size(288, 15);
             this.labelTargetDirectory.TabIndex = 1;
-            // 
+            //
             // labelTargetDirectoryHeader
-            // 
+            //
             this.labelTargetDirectoryHeader.AutoSize = true;
             this.labelTargetDirectoryHeader.Location = new System.Drawing.Point(12, 13);
             this.labelTargetDirectoryHeader.Name = "labelTargetDirectoryHeader";
@@ -89,6 +88,7 @@ namespace Windows_Auto_Unzipper
             // comboBoxStartMode
             // 
             this.comboBoxStartMode.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.comboBoxStartMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartMode.FormattingEnabled = true;
             this.comboBoxStartMode.Items.AddRange(new object[] {
             "Running",
@@ -120,7 +120,7 @@ namespace Windows_Auto_Unzipper
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.Location = new System.Drawing.Point(317, 184);
+            this.btnCancel.Location = new System.Drawing.Point(317, 233);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 7;
@@ -131,7 +131,7 @@ namespace Windows_Auto_Unzipper
             // btnDone
             // 
             this.btnDone.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDone.Location = new System.Drawing.Point(235, 184);
+            this.btnDone.Location = new System.Drawing.Point(235, 233);
             this.btnDone.Name = "btnDone";
             this.btnDone.Size = new System.Drawing.Size(75, 23);
             this.btnDone.TabIndex = 8;
@@ -156,12 +156,32 @@ namespace Windows_Auto_Unzipper
             this.checkBoxAutoDelete.Size = new System.Drawing.Size(15, 14);
             this.checkBoxAutoDelete.TabIndex = 10;
             this.checkBoxAutoDelete.UseVisualStyleBackColor = true;
-            // 
+            //
+            // labelArchiveExtensions
+            //
+            this.labelArchiveExtensions.AutoSize = true;
+            this.labelArchiveExtensions.Location = new System.Drawing.Point(12, 163);
+            this.labelArchiveExtensions.Name = "labelArchiveExtensions";
+            this.labelArchiveExtensions.Size = new System.Drawing.Size(104, 15);
+            this.labelArchiveExtensions.TabIndex = 11;
+            this.labelArchiveExtensions.Text = "Archive extensions";
+            //
+            // textBoxArchiveExtensions
+            //
+            this.textBoxArchiveExtensions.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxArchiveExtensions.Location = new System.Drawing.Point(23, 181);
+            this.textBoxArchiveExtensions.Name = "textBoxArchiveExtensions";
+            this.textBoxArchiveExtensions.Size = new System.Drawing.Size(369, 23);
+            this.textBoxArchiveExtensions.TabIndex = 12;
+            //
             // FormSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(404, 221);
+            this.ClientSize = new System.Drawing.Size(404, 268);
+            this.Controls.Add(this.textBoxArchiveExtensions);
+            this.Controls.Add(this.labelArchiveExtensions);
             this.Controls.Add(this.checkBoxAutoDelete);
             this.Controls.Add(this.labelAutoDelete);
             this.Controls.Add(this.btnDone);
@@ -177,6 +197,7 @@ namespace Windows_Auto_Unzipper
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(420, 307);
             this.Name = "FormSettings";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
@@ -207,6 +228,7 @@ namespace Windows_Auto_Unzipper
         private System.Windows.Forms.Button btnDone;
         private System.Windows.Forms.Label labelAutoDelete;
         private System.Windows.Forms.CheckBox checkBoxAutoDelete;
+        private System.Windows.Forms.Label labelArchiveExtensions;
+        private System.Windows.Forms.TextBox textBoxArchiveExtensions;
     }
 }
-

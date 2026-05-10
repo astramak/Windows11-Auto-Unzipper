@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows_Auto_Unzipper.Properties;
 
@@ -13,6 +15,7 @@ namespace Windows_Auto_Unzipper
     {
         private UnzipperContext context;
         private FileSystemWatcher watcher;
+        private readonly ConcurrentDictionary<string, byte> activeExtractions = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes the FileSystemWatcher
@@ -23,7 +26,11 @@ namespace Windows_Auto_Unzipper
             this.context = context;
 
             //Create the FileSystemWatcher
-            this.watcher = new FileSystemWatcher(@context.GetTargetFolder());
+            this.watcher = new FileSystemWatcher();
+            if (Directory.Exists(context.GetTargetFolder()))
+            {
+                this.watcher.Path = context.GetTargetFolder();
+            }
             this.watcher.NotifyFilter = NotifyFilters.Attributes
                                 | NotifyFilters.CreationTime
                                 | NotifyFilters.DirectoryName
@@ -33,11 +40,12 @@ namespace Windows_Auto_Unzipper
                                 | NotifyFilters.Security
                                 | NotifyFilters.Size;
 
-            //Set event handlers for FileSystemWatcger
+            //Set event handlers for FileSystemWatcher
             this.watcher.Created += this.OnCreated;
+            this.watcher.Renamed += this.OnRenamed;
             this.watcher.Error += OnError;
 
-            this.watcher.Filter = "*.zip";
+            this.watcher.Filter = "*.*";
             this.watcher.IncludeSubdirectories = false;
         }
 
@@ -47,7 +55,11 @@ namespace Windows_Auto_Unzipper
         /// <param name="targetDirectory">Path to the directory</param>
         public void SetTargetDirectory(String targetDirectory)
         {
-            this.watcher.Path = targetDirectory;
+            this.watcher.EnableRaisingEvents = false;
+            if (Directory.Exists(targetDirectory))
+            {
+                this.watcher.Path = targetDirectory;
+            }
         }
 
         /// <summary>
@@ -56,7 +68,7 @@ namespace Windows_Auto_Unzipper
         /// <returns>Returns false if no directory has been set</returns>
         public bool Start()
         {
-            if (!String.IsNullOrEmpty(this.watcher.Path))
+            if (!String.IsNullOrEmpty(this.watcher.Path) && Directory.Exists(this.context.GetTargetFolder()) && PathsEqual(this.watcher.Path, this.context.GetTargetFolder()))
             {
                 this.watcher.EnableRaisingEvents = true;
                 Settings.Default.LastRunningMode = "Running";
@@ -82,7 +94,10 @@ namespace Windows_Auto_Unzipper
         /// <returns>Returns true if running</returns>
         public bool IsRunning()
         {
-            return !String.IsNullOrEmpty(this.watcher.Path) && this.watcher.EnableRaisingEvents;
+            return !String.IsNullOrEmpty(this.watcher.Path)
+                && Directory.Exists(this.context.GetTargetFolder())
+                && PathsEqual(this.watcher.Path, this.context.GetTargetFolder())
+                && this.watcher.EnableRaisingEvents;
         }
 
         /// <summary>
@@ -92,10 +107,71 @@ namespace Windows_Auto_Unzipper
         /// <param name="e"></param>
         private void OnCreated(object sender, FileSystemEventArgs e)
         {
-            //Get the path to the watchedDirectory+file name
-            String extractDir = this.context.GetTargetFolder() + "\\" + System.IO.Path.GetFileNameWithoutExtension(this.context.GetTargetFolder() + "\\" + e.Name);
-            //Unzip the file on a seperate thread
-            Task unzipTask = Task.Run(() => Unzipper.Unzip(e.FullPath, extractDir, Settings.Default.AutoDelete));
+            this.QueueExtraction(e.FullPath);
+        }
+
+        private void OnRenamed(object sender, RenamedEventArgs e)
+        {
+            this.QueueExtraction(e.FullPath);
+        }
+
+        private void QueueExtraction(string archivePath)
+        {
+            if (!this.IsSupportedArchive(archivePath))
+            {
+                return;
+            }
+
+            string normalizedPath = Path.GetFullPath(archivePath);
+            if (!this.activeExtractions.TryAdd(normalizedPath, 0))
+            {
+                return;
+            }
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    string extractDir = GetAvailableExtractDirectory(normalizedPath);
+                    ExtractionResult result = Unzipper.Unzip(normalizedPath, extractDir, Settings.Default.AutoDelete);
+                    this.context.ReportExtractionResult(result);
+                }
+                finally
+                {
+                    this.activeExtractions.TryRemove(normalizedPath, out _);
+                }
+            });
+        }
+
+        private bool IsSupportedArchive(string path)
+        {
+            string extension = Path.GetExtension(path);
+            return ArchiveExtensionSettings
+                .Parse(Settings.Default.ArchiveExtensions)
+                .Contains(extension, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static string GetAvailableExtractDirectory(string archivePath)
+        {
+            string parentDir = Path.GetDirectoryName(archivePath);
+            string baseName = Path.GetFileNameWithoutExtension(archivePath);
+            string candidate = Path.Combine(parentDir, baseName);
+            int suffix = 2;
+
+            while (Directory.Exists(candidate) || File.Exists(candidate))
+            {
+                candidate = Path.Combine(parentDir, $"{baseName} ({suffix})");
+                suffix++;
+            }
+
+            return candidate;
+        }
+
+        private static bool PathsEqual(string left, string right)
+        {
+            string normalizedLeft = Path.TrimEndingDirectorySeparator(Path.GetFullPath(left));
+            string normalizedRight = Path.TrimEndingDirectorySeparator(Path.GetFullPath(right));
+            return String.Equals(normalizedLeft, normalizedRight, StringComparison.OrdinalIgnoreCase);
         }
 
 
@@ -126,4 +202,3 @@ namespace Windows_Auto_Unzipper
         }
     }
 }
-

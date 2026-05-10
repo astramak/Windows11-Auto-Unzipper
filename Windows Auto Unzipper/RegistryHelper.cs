@@ -5,33 +5,35 @@ namespace Windows_Auto_Unzipper
 {
     class RegistryHelper
     {
+        private const string RunKeyPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+
         public static void EnableAutoRun()
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            if (IsAutoRunEnabled(key))
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKeyPath, true);
+            if (key != null)
             {
-                key.SetValue(Application.ProductName, Application.ExecutablePath);
+                key.SetValue(Application.ProductName, $"\"{Application.ExecutablePath}\"");
             }
         }
 
         public static void DisableAutoRun()
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            if (IsAutoRunEnabled(key)) {
-                key.DeleteValue(Application.ProductName);
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKeyPath, true);
+            if (key != null && IsAutoRunEnabled(key))
+            {
+                key.DeleteValue(Application.ProductName, false);
             }
-            
         }
 
         public static bool IsAutoRunEnabled()
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKeyPath, false);
             return IsAutoRunEnabled(key);
         }
 
         public static bool IsAutoRunEnabled(RegistryKey key)
         {
-            return key.GetValue(Application.ProductName) != null;
+            return key != null && key.GetValue(Application.ProductName) != null;
         }
     }
 }

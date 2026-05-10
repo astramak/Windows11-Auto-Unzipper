@@ -1,7 +1,9 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Windows_Auto_Unzipper.Properties;
 
@@ -15,14 +17,18 @@ namespace Windows_Auto_Unzipper
         private Form settingsForm;
         private NotifyIcon trayIcon;
         private FolderWatcher folderWatcher;
+        private SynchronizationContext synchronizationContext;
 
         private ContextMenuStrip menu;
         private ToolStripMenuItem menuItemToggleRunning;
+        private ToolStripMenuItem menuItemOpenFolder;
+        private ToolStripMenuItem menuItemLastResult;
         private ToolStripMenuItem menuItemSettings;
         private ToolStripMenuItem menuItemExit;
+        private string lastResultText = "No recent activity";
 
         /// <summary>
-        /// Stores the directory that the folder watcher is targetting
+        /// Stores the directory that the folder watcher is targeting
         /// </summary>
         private string targetDirectory = UserFolders.GetPath(UserFolder.Downloads);
 
@@ -31,6 +37,8 @@ namespace Windows_Auto_Unzipper
         /// </summary>
         public UnzipperContext()
         {
+            this.synchronizationContext = SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
+
             //Create the tray icon
             this.trayIcon = new NotifyIcon();
             this.trayIcon.Icon = Windows_Auto_Unzipper.Properties.Resources.icon_128x128;
@@ -101,16 +109,20 @@ namespace Windows_Auto_Unzipper
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void menu_Openining(Object sender, CancelEventArgs e)
+        private void menu_Opening(Object sender, CancelEventArgs e)
         {
             if (this.folderWatcher.IsRunning())
             {
                 this.menuItemToggleRunning.Text = "Stop";
+                this.menuItemToggleRunning.Image = CreateMenuIcon(SystemIcons.Shield, Color.FromArgb(220, 70, 70));
             }
             else
             {
                 this.menuItemToggleRunning.Text = "Start";
+                this.menuItemToggleRunning.Image = CreateMenuIcon(SystemIcons.Application, Color.FromArgb(60, 145, 90));
             }
+
+            this.menuItemLastResult.Text = this.lastResultText;
         }
 
         /// <summary>
@@ -125,11 +137,17 @@ namespace Windows_Auto_Unzipper
                 this.folderWatcher.Stop();
                 this.menuItemToggleRunning.Text = "Start";
                 Settings.Default.LastRunningMode = "Stopped";
+                this.SetTrayStatus("Auto Unzipper stopped", ToolTipIcon.Info);
             }
             else if (this.folderWatcher.Start())
             {
                 this.menuItemToggleRunning.Text = "Stop";
                 Settings.Default.LastRunningMode = "Running";
+                this.SetTrayStatus($"Watching {this.targetDirectory}", ToolTipIcon.Info);
+            }
+            else
+            {
+                this.SetTrayStatus("Unable to start: target folder is missing.", ToolTipIcon.Warning);
             }
             Settings.Default.Save();
         }
@@ -161,6 +179,16 @@ namespace Windows_Auto_Unzipper
             return this.targetDirectory;
         }
 
+        public void ReportExtractionResult(ExtractionResult result)
+        {
+            this.synchronizationContext.Post(_ =>
+            {
+                string fileName = System.IO.Path.GetFileName(result.ArchivePath);
+                this.lastResultText = result.Success ? $"Last: {fileName} extracted" : $"Last error: {fileName}";
+                this.SetTrayStatus(result.Message, result.Success ? ToolTipIcon.Info : ToolTipIcon.Error);
+            }, null);
+        }
+
         // Close/stop the program
         public void Close()
         {
@@ -189,40 +217,127 @@ namespace Windows_Auto_Unzipper
         {
             //Create menu
             this.menu = new ContextMenuStrip();
-            this.menu.Opening += new CancelEventHandler(this.menu_Openining);
+            this.menu.Opening += new CancelEventHandler(this.menu_Opening);
+            this.menu.Renderer = new ModernMenuRenderer();
+            this.menu.ShowImageMargin = true;
             this.menu.SuspendLayout();
 
             //Settings button
             this.menuItemSettings = new ToolStripMenuItem();
             this.menuItemSettings.Name = "menuItemSettings";
             this.menuItemSettings.Text = "Settings";
+            this.menuItemSettings.Image = CreateMenuIcon(SystemIcons.Information, Color.FromArgb(70, 110, 180));
             this.menuItemSettings.Click += (sender, e) => this.ShowSettings();
+
+            //Open watched folder button
+            this.menuItemOpenFolder = new ToolStripMenuItem();
+            this.menuItemOpenFolder.Name = "menuItemOpenFolder";
+            this.menuItemOpenFolder.Text = "Open Watched Folder";
+            this.menuItemOpenFolder.Image = CreateMenuIcon(SystemIcons.WinLogo, Color.FromArgb(230, 175, 45));
+            this.menuItemOpenFolder.Click += (sender, e) => this.OpenWatchedFolder();
+
+            //Last result button
+            this.menuItemLastResult = new ToolStripMenuItem();
+            this.menuItemLastResult.Name = "menuItemLastResult";
+            this.menuItemLastResult.Text = this.lastResultText;
+            this.menuItemLastResult.Enabled = false;
+            this.menuItemLastResult.Image = CreateMenuIcon(SystemIcons.Asterisk, Color.FromArgb(90, 90, 90));
 
             //Exit button
             this.menuItemExit = new ToolStripMenuItem();
             this.menuItemExit.Name = "menuItemExit";
             this.menuItemExit.Text = "Exit";
+            this.menuItemExit.Image = CreateMenuIcon(SystemIcons.Error, Color.FromArgb(190, 65, 65));
             this.menuItemExit.Click += (sender, e) => this.Close();
 
             //Running/Stopped button
             this.menuItemToggleRunning = new ToolStripMenuItem();
-            this.menuItemToggleRunning.Name = "menuItemToggleRunnning";
+            this.menuItemToggleRunning.Name = "menuItemToggleRunning";
             this.menuItemToggleRunning.Click += new EventHandler(this.menuItemToggleRunning_Click);
             if (this.folderWatcher.IsRunning())
             {
                 this.menuItemToggleRunning.Text = "Stop";
+                this.menuItemToggleRunning.Image = CreateMenuIcon(SystemIcons.Shield, Color.FromArgb(220, 70, 70));
             }
             else
             {
                 this.menuItemToggleRunning.Text = "Start";
+                this.menuItemToggleRunning.Image = CreateMenuIcon(SystemIcons.Application, Color.FromArgb(60, 145, 90));
             }
 
             //Add the menu items to the menu
-            this.menu.Items.AddRange(new ToolStripItem[] { this.menuItemToggleRunning, this.menuItemSettings, this.menuItemExit });
+            this.menu.Items.AddRange(new ToolStripItem[]
+            {
+                this.menuItemToggleRunning,
+                new ToolStripSeparator(),
+                this.menuItemSettings,
+                this.menuItemOpenFolder,
+                new ToolStripSeparator(),
+                this.menuItemLastResult,
+                new ToolStripSeparator(),
+                this.menuItemExit
+            });
 
             this.menu.ResumeLayout(false);
             this.trayIcon.ContextMenuStrip = this.menu;
 
+        }
+
+        private void OpenWatchedFolder()
+        {
+            if (!System.IO.Directory.Exists(this.targetDirectory))
+            {
+                this.SetTrayStatus("Target folder does not exist.", ToolTipIcon.Warning);
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = this.targetDirectory,
+                UseShellExecute = true
+            });
+        }
+
+        private void SetTrayStatus(string message, ToolTipIcon icon)
+        {
+            const int maxTextLength = 63;
+            this.trayIcon.Text = message.Length > maxTextLength ? message.Substring(0, maxTextLength) : message;
+            this.trayIcon.BalloonTipTitle = "Auto Unzipper";
+            this.trayIcon.BalloonTipText = message;
+            this.trayIcon.BalloonTipIcon = icon;
+            this.trayIcon.ShowBalloonTip(3000);
+        }
+
+        private static Bitmap CreateMenuIcon(Icon icon, Color accent)
+        {
+            Bitmap bitmap = new Bitmap(20, 20);
+            using Graphics graphics = Graphics.FromImage(bitmap);
+            using SolidBrush background = new SolidBrush(Color.FromArgb(28, accent));
+            graphics.Clear(Color.Transparent);
+            graphics.FillEllipse(background, 1, 1, 18, 18);
+            graphics.DrawIcon(icon, new Rectangle(3, 3, 14, 14));
+            return bitmap;
+        }
+
+        private sealed class ModernMenuRenderer : ToolStripProfessionalRenderer
+        {
+            public ModernMenuRenderer()
+                : base(new ModernMenuColors())
+            {
+                this.RoundedEdges = true;
+            }
+        }
+
+        private sealed class ModernMenuColors : ProfessionalColorTable
+        {
+            public override Color ToolStripDropDownBackground => Color.FromArgb(248, 249, 251);
+            public override Color ImageMarginGradientBegin => Color.FromArgb(248, 249, 251);
+            public override Color ImageMarginGradientMiddle => Color.FromArgb(248, 249, 251);
+            public override Color ImageMarginGradientEnd => Color.FromArgb(248, 249, 251);
+            public override Color MenuItemSelected => Color.FromArgb(232, 240, 254);
+            public override Color MenuItemBorder => Color.FromArgb(170, 195, 245);
+            public override Color SeparatorDark => Color.FromArgb(222, 226, 232);
+            public override Color SeparatorLight => Color.White;
         }
 
     }
