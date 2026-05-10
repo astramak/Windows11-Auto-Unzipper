@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using Windows_Auto_Unzipper.Properties;
 
@@ -36,7 +38,8 @@ namespace Windows_Auto_Unzipper
 
             this.checkBoxAutoLaunch.Checked = Settings.Default.AutoLaunch;
             this.checkBoxAutoDelete.Checked = Settings.Default.AutoDelete;
-            this.textBoxArchiveExtensions.Text = ArchiveExtensionSettings.Format(Settings.Default.ArchiveExtensions);
+            this.checkBoxNotifications.Checked = Settings.Default.NotificationsEnabled;
+            this.LoadArchiveExtensionSettings();
 
         }
 
@@ -132,8 +135,11 @@ namespace Windows_Auto_Unzipper
             //Save changes to auto delete
             Settings.Default.AutoDelete = checkBoxAutoDelete.Checked;
 
+            //Save changes to notifications
+            Settings.Default.NotificationsEnabled = this.checkBoxNotifications.Checked;
+
             //Save supported archive extensions
-            Settings.Default.ArchiveExtensions = ArchiveExtensionSettings.Format(this.textBoxArchiveExtensions.Text);
+            Settings.Default.ArchiveExtensions = ArchiveExtensionSettings.Format(this.GetSelectedArchiveExtensions());
 
             Settings.Default.Save();
 
@@ -162,6 +168,32 @@ namespace Windows_Auto_Unzipper
             if (this.Visible)
             {
                 this.LoadSettings();
+            }
+        }
+
+        private void LoadArchiveExtensionSettings()
+        {
+            var selectedExtensions = ArchiveExtensionSettings.Parse(Settings.Default.ArchiveExtensions);
+            this.checkBoxZip.Checked = selectedExtensions.Contains(".zip", StringComparer.OrdinalIgnoreCase);
+            this.checkBox7z.Checked = selectedExtensions.Contains(".7z", StringComparer.OrdinalIgnoreCase);
+            this.checkBoxRar.Checked = selectedExtensions.Contains(".rar", StringComparer.OrdinalIgnoreCase);
+        }
+
+        private IEnumerable<string> GetSelectedArchiveExtensions()
+        {
+            if (this.checkBoxZip.Checked)
+            {
+                yield return ".zip";
+            }
+
+            if (this.checkBox7z.Checked)
+            {
+                yield return ".7z";
+            }
+
+            if (this.checkBoxRar.Checked)
+            {
+                yield return ".rar";
             }
         }
     }

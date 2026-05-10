@@ -91,5 +91,17 @@ namespace Windows_Auto_Unzipper.Properties {
                 this["ArchiveExtensions"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool NotificationsEnabled {
+            get {
+                return ((bool)(this["NotificationsEnabled"]));
+            }
+            set {
+                this["NotificationsEnabled"] = value;
+            }
+        }
     }
 }

@@ -44,7 +44,11 @@
             this.labelAutoDelete = new System.Windows.Forms.Label();
             this.checkBoxAutoDelete = new System.Windows.Forms.CheckBox();
             this.labelArchiveExtensions = new System.Windows.Forms.Label();
-            this.textBoxArchiveExtensions = new System.Windows.Forms.TextBox();
+            this.checkBoxZip = new System.Windows.Forms.CheckBox();
+            this.checkBox7z = new System.Windows.Forms.CheckBox();
+            this.checkBoxRar = new System.Windows.Forms.CheckBox();
+            this.labelNotifications = new System.Windows.Forms.Label();
+            this.checkBoxNotifications = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             //
             // btnChangeDirectory
@@ -166,21 +170,64 @@
             this.labelArchiveExtensions.TabIndex = 11;
             this.labelArchiveExtensions.Text = "Archive extensions";
             //
-            // textBoxArchiveExtensions
+            // checkBoxZip
             //
-            this.textBoxArchiveExtensions.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxArchiveExtensions.Location = new System.Drawing.Point(23, 181);
-            this.textBoxArchiveExtensions.Name = "textBoxArchiveExtensions";
-            this.textBoxArchiveExtensions.Size = new System.Drawing.Size(369, 23);
-            this.textBoxArchiveExtensions.TabIndex = 12;
+            this.checkBoxZip.AutoSize = true;
+            this.checkBoxZip.Location = new System.Drawing.Point(23, 181);
+            this.checkBoxZip.Name = "checkBoxZip";
+            this.checkBoxZip.Size = new System.Drawing.Size(46, 19);
+            this.checkBoxZip.TabIndex = 12;
+            this.checkBoxZip.Text = ".zip";
+            this.checkBoxZip.UseVisualStyleBackColor = true;
+            //
+            // checkBox7z
+            //
+            this.checkBox7z.AutoSize = true;
+            this.checkBox7z.Location = new System.Drawing.Point(86, 181);
+            this.checkBox7z.Name = "checkBox7z";
+            this.checkBox7z.Size = new System.Drawing.Size(39, 19);
+            this.checkBox7z.TabIndex = 13;
+            this.checkBox7z.Text = ".7z";
+            this.checkBox7z.UseVisualStyleBackColor = true;
+            //
+            // checkBoxRar
+            //
+            this.checkBoxRar.AutoSize = true;
+            this.checkBoxRar.Location = new System.Drawing.Point(142, 181);
+            this.checkBoxRar.Name = "checkBoxRar";
+            this.checkBoxRar.Size = new System.Drawing.Size(43, 19);
+            this.checkBoxRar.TabIndex = 14;
+            this.checkBoxRar.Text = ".rar";
+            this.checkBoxRar.UseVisualStyleBackColor = true;
+            //
+            // labelNotifications
+            //
+            this.labelNotifications.AutoSize = true;
+            this.labelNotifications.Location = new System.Drawing.Point(12, 211);
+            this.labelNotifications.Name = "labelNotifications";
+            this.labelNotifications.Size = new System.Drawing.Size(104, 15);
+            this.labelNotifications.TabIndex = 15;
+            this.labelNotifications.Text = "Show notifications";
+            //
+            // checkBoxNotifications
+            //
+            this.checkBoxNotifications.AutoSize = true;
+            this.checkBoxNotifications.Location = new System.Drawing.Point(296, 212);
+            this.checkBoxNotifications.Name = "checkBoxNotifications";
+            this.checkBoxNotifications.Size = new System.Drawing.Size(15, 14);
+            this.checkBoxNotifications.TabIndex = 16;
+            this.checkBoxNotifications.UseVisualStyleBackColor = true;
             //
             // FormSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(404, 268);
-            this.Controls.Add(this.textBoxArchiveExtensions);
+            this.Controls.Add(this.checkBoxNotifications);
+            this.Controls.Add(this.labelNotifications);
+            this.Controls.Add(this.checkBoxRar);
+            this.Controls.Add(this.checkBox7z);
+            this.Controls.Add(this.checkBoxZip);
             this.Controls.Add(this.labelArchiveExtensions);
             this.Controls.Add(this.checkBoxAutoDelete);
             this.Controls.Add(this.labelAutoDelete);
@@ -229,6 +276,10 @@
         private System.Windows.Forms.Label labelAutoDelete;
         private System.Windows.Forms.CheckBox checkBoxAutoDelete;
         private System.Windows.Forms.Label labelArchiveExtensions;
-        private System.Windows.Forms.TextBox textBoxArchiveExtensions;
+        private System.Windows.Forms.CheckBox checkBoxZip;
+        private System.Windows.Forms.CheckBox checkBox7z;
+        private System.Windows.Forms.CheckBox checkBoxRar;
+        private System.Windows.Forms.Label labelNotifications;
+        private System.Windows.Forms.CheckBox checkBoxNotifications;
     }
 }

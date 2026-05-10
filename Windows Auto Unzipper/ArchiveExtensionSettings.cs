@@ -7,6 +7,7 @@ namespace Windows_Auto_Unzipper
     static class ArchiveExtensionSettings
     {
         public const string DefaultExtensions = ".zip";
+        public static readonly string[] SupportedExtensions = { ".zip", ".7z", ".rar" };
 
         public static IReadOnlyCollection<string> Parse(string value)
         {
@@ -28,6 +29,17 @@ namespace Windows_Auto_Unzipper
         public static string Format(string value)
         {
             return String.Join(", ", Parse(value));
+        }
+
+        public static string Format(IEnumerable<string> extensions)
+        {
+            var normalizedExtensions = extensions
+                .Select(Normalize)
+                .Where(extension => SupportedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            return String.Join(", ", normalizedExtensions.Length == 0 ? new[] { DefaultExtensions } : normalizedExtensions);
         }
 
         private static string Normalize(string extension)

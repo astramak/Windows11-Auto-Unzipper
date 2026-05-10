@@ -88,10 +88,11 @@ namespace Windows_Auto_Unzipper
         /// <returns>Returns true if file is closed</returns>
         public static bool WaitForFileReady(string filepath, bool wait)
         {
-            bool fileClosed = false;
-            int retries = 20;
-            const int delay = 500; // Max time spent here = retries*delay milliseconds
+            int retries = wait ? 300 : 1;
+            const int delay = 1000; // Max time spent here = retries*delay milliseconds
             long lastLength = -1;
+            int stableChecks = 0;
+            bool canOpen = false;
 
             if (!File.Exists(filepath))
                 return false;
@@ -100,25 +101,44 @@ namespace Windows_Auto_Unzipper
             {
                 try
                 {
-                    // Attempts to open then close the file in RW mode, denying other users to place any locks.
-                    using FileStream fs = File.Open(filepath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                    // The file must be unlocked and unchanged for several checks before extraction starts.
+                    using FileStream fs = File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.None);
+                    canOpen = true;
                     long currentLength = fs.Length;
-                    fileClosed = currentLength > 0 && currentLength == lastLength;
+                    if (currentLength > 0 && currentLength == lastLength)
+                    {
+                        stableChecks++;
+                    }
+                    else
+                    {
+                        stableChecks = 0;
+                    }
+
                     lastLength = currentLength;
                 }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
+                catch (IOException)
+                {
+                    canOpen = false;
+                    stableChecks = 0;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    canOpen = false;
+                    stableChecks = 0;
+                }
 
-                if (!wait) break;
+                if (!wait || stableChecks >= 3)
+                {
+                    break;
+                }
 
                 retries--;
 
-                if (!fileClosed)
-                    Thread.Sleep(delay);
+                Thread.Sleep(delay);
             }
-            while (!fileClosed && retries > 0);
+            while (stableChecks < 3 && retries > 0);
 
-            return fileClosed;
+            return wait ? stableChecks >= 3 : canOpen;
         }
 
         public static bool IsFileClosed(string filepath, bool wait)

@@ -42,6 +42,7 @@ namespace Windows_Auto_Unzipper
 
             //Set event handlers for FileSystemWatcher
             this.watcher.Created += this.OnCreated;
+            this.watcher.Changed += this.OnChanged;
             this.watcher.Renamed += this.OnRenamed;
             this.watcher.Error += OnError;
 
@@ -106,6 +107,11 @@ namespace Windows_Auto_Unzipper
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OnCreated(object sender, FileSystemEventArgs e)
+        {
+            this.QueueExtraction(e.FullPath);
+        }
+
+        private void OnChanged(object sender, FileSystemEventArgs e)
         {
             this.QueueExtraction(e.FullPath);
         }

@@ -302,6 +302,11 @@ namespace Windows_Auto_Unzipper
         {
             const int maxTextLength = 63;
             this.trayIcon.Text = message.Length > maxTextLength ? message.Substring(0, maxTextLength) : message;
+            if (!Settings.Default.NotificationsEnabled)
+            {
+                return;
+            }
+
             this.trayIcon.BalloonTipTitle = "Auto Unzipper";
             this.trayIcon.BalloonTipText = message;
             this.trayIcon.BalloonTipIcon = icon;
